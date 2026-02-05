@@ -3,7 +3,7 @@ import {
   ILLMProvider,
   ILLMResponse,
   LLMProviderConfig,
-} from "./llm-provider.interface.js";
+} from "../../services/llm-provider.interface.js";
 
 export class OpenAIProvider extends ILLMProvider {
   constructor(apiKey, config = new LLMProviderConfig({})) {
