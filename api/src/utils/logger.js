@@ -1,4 +1,5 @@
 import pino from "pino";
+import "dotenv/config";
 
 const logger = pino({
   level: process.env.LOG_LEVEL || "info",
