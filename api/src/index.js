@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import logger from "./utils/logger.js";
 
 function main() {
   const __filename = fileURLToPath(import.meta.url);
@@ -15,7 +16,7 @@ function main() {
   app.use(express.static(staticPath));
 
   const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    logger.info(`Server is running on port ${PORT}`);
   });
 
   app.get("/health", (req, res) => {
@@ -23,9 +24,9 @@ function main() {
   });
 
   process.on("SIGTERM", () => {
-    console.log("SIGTERM signal received: closing HTTP server");
+    logger.info("SIGTERM signal received: closing HTTP server");
     server.close(() => {
-      console.log("HTTP server closed");
+      logger.info("HTTP server closed");
     });
   });
 }
