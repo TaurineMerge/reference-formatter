@@ -12,7 +12,7 @@ export class LLMClientService {
     this.#provider = provider;
     this.#systemPrompt = systemPrompt;
     this.#defaultOptions = {
-      maxRetries: options.maxRetries || 3,
+      maxRetries: 0, // Retries are managed by the service instead
       retryDelay: options.retryDelay || 1000,
       ...options,
     };
@@ -70,9 +70,9 @@ export class LLMClientService {
           continue;
         }
 
-        if (attempt === mergedOptions.maxRetries) {
+        if (attempt === mergedOptions.maxRetries || !this.shouldRetry(error)) {
           this.logger.error(
-            `[LLMClientService] All ${mergedOptions.maxRetries} attempts failed`,
+            `[LLMClientService] ${this.shouldRetry(error) ? "All attempts failed" : "Non-retryable error"}`,
           );
           throw this.normalizeError(lastError);
         }
