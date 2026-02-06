@@ -1,19 +1,13 @@
 import express from "express";
 import "dotenv/config";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import logger from "./utils/logger.js";
 
-function main() {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const staticPath = join(__dirname, "..", "..", "ui");
-
+function main(dependencies = {}) {
   const PORT = process.env.PORT || 3000;
 
-  const app = express();
+  const logger = dependencies.logger || console;
 
-  app.use(express.static(staticPath));
+  const app = express();
 
   app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok" });
@@ -31,4 +25,4 @@ function main() {
   });
 }
 
-main();
+main({ logger });
