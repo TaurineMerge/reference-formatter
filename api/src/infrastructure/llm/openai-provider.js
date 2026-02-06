@@ -7,18 +7,27 @@ import {
 
 /**
  * @class OpenAIProvider
- * @memberOf module:OpenAIProvider
  * @implements {ILLMProvider}
- * @description This class implements the ILLMProvider interface for the OpenAI API.
- * It allows you to generate completions using the OpenAI API and handles errors in a standardized way.
+ * @description OpenAI API implementation of the LLM provider interface.
+ * Handles chat completion requests, applies configuration defaults, and normalizes errors.
+ *
+ *
+ * Creates a new OpenAI provider instance.
+ *
+ * @param {string} apiKey - OpenAI API key (required)
+ * @param {LLMProviderConfig} [config={}] - Optional provider configuration
+ *
+ * @throws {Error} "OpenAI API key is required" - If apiKey is null, undefined, or empty
+ *
+ *
+ * @example
+ * const provider = new OpenAIProvider("sk-...", new LLMProviderConfig({
+ *   model: "gpt-4",
+ *   temperature: 0.5,
+ *   maxTokens: 1000
+ * }));
  */
 export class OpenAIProvider extends ILLMProvider {
-  /**
-   * Constructor for OpenAIProvider.
-   * @param {string} apiKey - The OpenAI API key to use for generating completions.
-   * @param {LLMProviderConfig} [config] - The configuration for the OpenAI provider.
-   * @throws {Error} If the OpenAI API key is missing or invalid.
-   */
   constructor(apiKey, config = new LLMProviderConfig({})) {
     super();
 
@@ -44,14 +53,32 @@ export class OpenAIProvider extends ILLMProvider {
   }
 
   /**
-   * Generates a completion for the given prompt using the provided parameters.
-   * @param {{ systemPrompt: string, userPrompt: string, options: object }} params - The parameters for generating the completion.
-   * @param {object} params.systemPrompt - The system prompt to use for generating the completion.
-   * @param {string} params.userPrompt - The user prompt to use for generating the completion.
-   * @param {object} [params.options] - The options for generating the completion.
-   * @param {object} [params.options.params] - The additional parameters to pass to the OpenAI provider.
-   * @returns {Promise<ILLMResponse>} A promise for the generated completion, or the full response if options.returnFullResponse is true.
-   * @throws {Error} If the OpenAI provider is invalid or if all attempts to generate the completion fail.
+   * Generates a chat completion using OpenAI's API.
+   *
+   * @param {object} params - Parameters for generation
+   * @param {string} params.systemPrompt - System-level instructions for the model
+   * @param {string} params.userPrompt - User's input/query
+   * @param {object} [params.options={}] - Optional overrides
+   * @param {object} [params.options.params] - Override default config parameters
+   *
+   * @returns {Promise<ILLMResponse>} Standardized response object
+   * @returns {string} returns.content - Generated completion text
+   * @returns {object} returns.usage - Token usage statistics
+   * @returns {number} returns.usage.total_tokens - Total tokens used
+   * @returns {number} returns.usage.prompt_tokens - Tokens in prompt
+   * @returns {number} returns.usage.completion_tokens - Tokens in completion
+   * @returns {object} returns.rawResponse - Original OpenAI API response
+   *
+   * @throws {Error} Normalized error with `.status` and `.originalError` properties
+   *
+   * @example
+   * const response = await provider.generateCompletion({
+   *   systemPrompt: "You are a helpful assistant",
+   *   userPrompt: "Explain async/await",
+   *   options: { params: { temperature: 0.3 } }
+   * });
+   * console.log(response.content);
+   * console.log(response.usage.total_tokens);
    */
   async generateCompletion({ systemPrompt, userPrompt, options = {} }) {
     const params = {
@@ -85,11 +112,14 @@ export class OpenAIProvider extends ILLMProvider {
   }
 
   /**
-   * Normalizes an error to have a standard format.
-   * If the error is an APIError or has a status property, returns an error with the message and status properties set.
-   * Otherwise, returns the error unchanged.
-   * @param {Error} error The error to normalize
-   * @returns {Error} The normalized error
+   * Normalizes OpenAI SDK errors into a consistent format for upstream handling.
+   *
+   * Adds `.status` and `.originalError` properties to facilitate uniform error handling.
+   *
+   * @param {Error} error - Original OpenAI SDK error
+   * @returns {Error} Normalized error with additional metadata
+   *
+   * @private
    */
   normalizeError(error) {
     if (error.name === "APIError" || error.status) {

@@ -1,29 +1,54 @@
 /**
- * @class LLMClientService
- * @memberOf module:LLMClientService
- * @description A service for generating completions from LLM providers with retry logic and error normalization.
+ * Orchestrates LLM completion requests with automatic retry logic and error handling.
+ * Manages the communication between application code and LLM providers, handling transient failures gracefully.
+ *
+ * @class
+ * @param {object} logger - Logger instance for debugging and error tracking
  */
 export class LLMClientService {
-  /**
-   * Constructor for LLMClientService
-   * @param {object} logger - The logger object to use for logging
-   */
   constructor(logger) {
     this.logger = logger;
     this.logger.debug("[LLMClientService] Initialized");
   }
 
   /**
-   * Generate a completion for the given prompt using the provided LLM provider.
-   * @param {object} provider - The LLM provider to use for generating the completion.
-   * @param {string} systemPrompt - The system prompt to use for generating the completion.
-   * @param {string} userPrompt - The user prompt to use for generating the completion.
-   * @param {object} options - The options to use for generating the completion.
-   * @param {number} options.maxRetries - The maximum number of times to retry the generation on error.
-   * @param {number} options.retryDelay - The delay in milliseconds to wait before retrying the generation on error.
-   * @param {boolean} options.returnFullResponse - Whether to return the full response from the LLM provider, or just the content.
-   * @returns {Promise<string|object>} A promise for the generated completion, or the full response if options.returnFullResponse is true.
-   * @throws {Error} If the LLM provider is invalid or if all attempts to generate the completion fail.
+   * Generates a completion from an LLM provider with automatic retry on transient failures.
+   *
+   * @param {ILLMProvider} provider - Provider instance to use for generation
+   * @param {string} systemPrompt - System-level instructions for the model
+   * @param {string} userPrompt - User's input/query
+   * @param {object} [options={}] - Generation options
+   * @param {number} [options.maxRetries=0] - Maximum retry attempts on retryable errors
+   * @param {number} [options.retryDelay=1000] - Base delay in ms before retrying (uses exponential backoff)
+   * @param {boolean} [options.returnFullResponse=false] - If true, returns full response object; if false, returns only content string
+   *
+   * @returns {Promise<string|object>} Generated content string, or full response object if returnFullResponse=true
+   * @returns {string} returns.content - Generated text (when returnFullResponse=true)
+   * @returns {object} returns.usage - Token usage statistics (when returnFullResponse=true)
+   * @returns {object} returns.rawResponse - Original provider response (when returnFullResponse=true)
+   *
+   * @throws {Error} "Valid LLM provider is required" - If provider is missing or invalid
+   * @throws {Error} "Invalid API key" - If provider returns 401 status
+   * @throws {Error} "Invalid request: ..." - If provider returns 400 status
+   * @throws {Error} Original error - After all retry attempts exhausted on retryable errors
+   *
+   * @example
+   * // Simple usage
+   * const content = await client.generateCompletion(
+   *   provider,
+   *   "You are a helpful assistant",
+   *   "What is 2+2?"
+   * );
+   *
+   * @example
+   * // With retries and full response
+   * const response = await client.generateCompletion(
+   *   provider,
+   *   "You are a helpful assistant",
+   *   "Explain quantum computing",
+   *   { maxRetries: 3, returnFullResponse: true }
+   * );
+   * console.log(response.usage.total_tokens);
    */
   async generateCompletion(provider, systemPrompt, userPrompt, options = {}) {
     if (!provider || typeof provider.generateCompletion !== "function") {
@@ -31,7 +56,7 @@ export class LLMClientService {
     }
 
     const defaultOptions = {
-      maxRetries: 0,
+      maxRetries: options.maxRetries ?? 0,
       retryDelay: options.retryDelay || 1000,
       ...options,
     };
@@ -91,16 +116,21 @@ export class LLMClientService {
   }
 
   /**
-   * Returns true if the given error is retryable, false otherwise.
+   * Determines if an error should trigger a retry attempt.
    *
-   * A retryable error is one that has a status of 429 (rate limit), 503 (service unavailable), or 504 (gateway timeout).
-   * A retryable error is also one that has a message containing "timeout", "rate limit", "busy", or "try again".
+   * Retryable conditions:
+   * - HTTP 429 (Rate Limit Exceeded)
+   * - HTTP 503 (Service Unavailable)
+   * - HTTP 504 (Gateway Timeout)
+   * - Error message contains: "timeout", "rate limit", "busy", "try again"
    *
-   * @param {Error} error The error to check
-   * @returns {boolean} True if the error is retryable, false otherwise
+   * @param {Error} error - Error to evaluate
+   * @returns {boolean} True if error is transient and should be retried
+   *
+   * @private
    */
   shouldRetry(error) {
-    const retryableStatuses = [429, 503, 504]; // Rate limit, service unavailable, gateway timeout
+    const retryableStatuses = [429, 503, 504];
     const retryableMessages = [
       /timeout/i,
       /rate limit/i,
@@ -123,14 +153,20 @@ export class LLMClientService {
   }
 
   /**
-   * Calculates the retry delay for the given attempt and base delay.
+   * Calculates retry delay using exponential backoff with jitter.
    *
-   * The retry delay is calculated as an exponential backoff with a random jitter added to prevent
-   * thundering herd problem. The maximum retry delay is capped at 30 seconds.
+   * Formula: min(baseDelay * 2^(attempt-1) + random(0-1000ms), 30000ms)
    *
-   * @param {number} attempt The attempt number (starts at 1)
-   * @param {number} baseDelay The base delay in milliseconds
-   * @returns {number} The retry delay in milliseconds
+   * @param {number} attempt - Current attempt number (1-based)
+   * @param {number} baseDelay - Base delay in milliseconds
+   * @returns {number} Calculated delay in milliseconds (capped at 30 seconds)
+   *
+   * @example
+   * calculateRetryDelay(1, 1000) // ~1000-2000ms
+   * calculateRetryDelay(2, 1000) // ~2000-3000ms
+   * calculateRetryDelay(3, 1000) // ~4000-5000ms
+   *
+   * @private
    */
   calculateRetryDelay(attempt, baseDelay) {
     const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
@@ -139,14 +175,17 @@ export class LLMClientService {
   }
 
   /**
-   * Normalizes an error to have a standard format.
+   * Normalizes provider errors into consistent application-level errors.
    *
-   * For errors with a status of 401, returns an error with the message "Invalid API key".
-   * For errors with a status of 400, returns an error with the message "Invalid request: <error message>".
-   * For all other errors, returns the error unchanged.
+   * @param {Error} error - Original error from provider
+   * @returns {Error} Normalized error with user-friendly message
    *
-   * @param {Error} error The error to normalize
-   * @returns {Error} The normalized error
+   * @example
+   * // HTTP 401 → "Invalid API key"
+   * // HTTP 400 → "Invalid request: <original message>"
+   * // Other errors → unchanged
+   *
+   * @private
    */
   normalizeError(error) {
     if (error.status === 401) {
