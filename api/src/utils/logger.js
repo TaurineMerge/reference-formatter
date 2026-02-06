@@ -1,4 +1,5 @@
 import pino from "pino";
+import "dotenv/config";
 
 const logger = pino({
   level: process.env.LOG_LEVEL || "info",
@@ -11,14 +12,4 @@ const logger = pino({
   },
 });
 
-export default {
-  info: (message) => {
-    logger.info(message);
-  },
-  error: (message) => {
-    logger.error(message);
-  },
-  debug: (message) => {
-    logger.debug(message);
-  },
-};
+export default logger;
