@@ -11,14 +11,4 @@ const logger = pino({
   },
 });
 
-export default {
-  info: (message) => {
-    logger.info(message);
-  },
-  error: (message) => {
-    logger.error(message);
-  },
-  debug: (message) => {
-    logger.debug(message);
-  },
-};
+export default logger;
