@@ -15,12 +15,12 @@ function main() {
 
   app.use(express.static(staticPath));
 
-  const server = app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
-  });
-
   app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok" });
+  });
+
+  const server = app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT}`);
   });
 
   process.on("SIGTERM", () => {
