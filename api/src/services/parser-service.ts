@@ -1,4 +1,7 @@
+import pino from "pino";
 import { PARSER_SYSTEM_PROMPT } from "../helpers/parser-llm-sys-prompt.js";
+import { ILLMProvider } from "./llm-provider.interface.js";
+import { LLMClientService } from "./llm-client-service.js";
 
 /**
  * Orchestrates parsing of unstructured text into structured JSON using an LLM.
@@ -7,33 +10,34 @@ import { PARSER_SYSTEM_PROMPT } from "../helpers/parser-llm-sys-prompt.js";
  * @class
  * @param {LLMClientService} llmClientService - Service to manage LLM completion requests
  * @param {ILLMProvider} llmProvider - LLM provider instance (e.g., OpenAIProvider)
- * @param {object} logger - Logger instance for debug and error tracking
+ * @param {object} #logger - Logger instance for debug and error tracking
  * @param {string} [systemPrompt=PARSER_SYSTEM_PROMPT] - Instructions guiding parsing behavior
  *
  * @example
  * const parser = new Parser(
  *   clientService,
  *   openaiProvider,
- *   logger,
+ *   #logger,
  *   "You are a JSON parser. Extract structured data from raw text."
  * );
  */
 export class Parser {
-  #systemPrompt;
-  #llmProvider;
-  #llmClientService;
+  #systemPrompt: string;
+  #llmProvider: ILLMProvider;
+  #llmClientService: LLMClientService;
+  #logger: pino.Logger;
 
   constructor(
-    llmClientService,
-    llmProvider,
-    logger,
+    llmClientService: LLMClientService,
+    llmProvider: ILLMProvider,
+    logger: pino.Logger,
     systemPrompt = PARSER_SYSTEM_PROMPT,
   ) {
-    this.logger = logger;
+    this.#logger = logger;
     this.#systemPrompt = systemPrompt;
     this.#llmProvider = llmProvider;
     this.#llmClientService = llmClientService;
-    this.logger.debug("[Parser] Initialized");
+    this.#logger.debug("[Parser] Initialized");
   }
 
   /**
@@ -50,8 +54,8 @@ export class Parser {
    * const result = await parser.parse("John Doe, age 30, lives in New York");
    * // Returns: { name: "John Doe", age: 30, city: "New York" }
    */
-  async parse(input) {
-    this.logger.debug(`[Parser] Parsing input: ${input}`);
+  async parse(input: string): Promise<object> {
+    this.#logger.debug(`[Parser] Parsing input: ${input}`);
     try {
       const response = await this.#llmClientService.generateCompletion(
         this.#llmProvider,
@@ -59,9 +63,14 @@ export class Parser {
         input,
         {},
       );
-      return JSON.parse(response.content);
-    } catch (error) {
-      this.logger.error(`[Parser] Error parsing input: ${error.message}`);
+      const content = typeof response === 'string' ? response : response.content;
+      return JSON.parse(content);
+    } catch (error: unknown) {
+      if (error instanceof SyntaxError) {
+        this.#logger.error(`[Parser] Error parsing input: ${error.message}`);
+        throw error;
+      }
+      this.#logger.error(`[Parser] LLM request failed: ${error instanceof Error ? error.message : "Unknown error"}`);
       throw error;
     }
   }
@@ -71,9 +80,9 @@ export class Parser {
    *
    * @param {string} systemPrompt - New system prompt
    */
-  setSystemPrompt(systemPrompt) {
+  setSystemPrompt(systemPrompt: string): void {
     this.#systemPrompt = systemPrompt;
-    this.logger.debug("[Parser] System prompt updated");
+    this.#logger.debug("[Parser] System prompt updated");
   }
 
   /**
@@ -81,9 +90,9 @@ export class Parser {
    *
    * @param {ILLMProvider} llmProvider - New LLM provider
    */
-  setLLMProvider(llmProvider) {
+  setLLMProvider(llmProvider: ILLMProvider): void {
     this.#llmProvider = llmProvider;
-    this.logger.debug("[Parser] LLM provider updated");
+    this.#logger.debug("[Parser] LLM provider updated");
   }
 
   /**
@@ -91,9 +100,9 @@ export class Parser {
    *
    * @param {LLMClientService} llmClientService - New client service instance
    */
-  setLLMClientService(llmClientService) {
+  setLLMClientService(llmClientService: LLMClientService): void {
     this.#llmClientService = llmClientService;
-    this.logger.debug("[Parser] LLM client service updated");
+    this.#logger.debug("[Parser] LLM client service updated");
   }
 
   /**
@@ -101,7 +110,7 @@ export class Parser {
    *
    * @returns {string} Current system prompt
    */
-  getSystemPrompt() {
+  getSystemPrompt(): string {
     return this.#systemPrompt;
   }
 
@@ -110,7 +119,7 @@ export class Parser {
    *
    * @returns {ILLMProvider} Current provider instance
    */
-  getLLMProvider() {
+  getLLMProvider(): ILLMProvider {
     return this.#llmProvider;
   }
 
@@ -119,7 +128,7 @@ export class Parser {
    *
    * @returns {LLMClientService} Current client service instance
    */
-  getLLMClientService() {
+  getLLMClientService(): LLMClientService {
     return this.#llmClientService;
   }
 }

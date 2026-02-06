@@ -2,14 +2,14 @@ import express from "express";
 import "dotenv/config";
 import logger from "./utils/logger.js";
 
-function main(dependencies = {}) {
+function main(dependencies: { logger?: typeof logger }) {
   const PORT = process.env.PORT || 3000;
 
   const logger = dependencies.logger || console;
 
   const app = express();
 
-  app.get("/health", (req, res) => {
+  app.get("/health", (_req, res) => {
     res.status(200).json({ status: "ok" });
   });
 
