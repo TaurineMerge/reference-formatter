@@ -1,3 +1,9 @@
+/**
+ * @class ILLMProvider
+ * @memberOf module:LLMProviderInterface
+ * @description Interface for LLM providers.
+ * This class defines the method that must be implemented by any LLM provider to generate a completion for a given prompt.
+ */
 export class ILLMProvider {
   /**
    * Generates a completion for the given prompt using the provided parameters.
@@ -9,6 +15,12 @@ export class ILLMProvider {
   }
 }
 
+/**
+ * @class ILLMResponse
+ * @memberOf module:LLMProviderInterface
+ * @description Interface for LLM responses.
+ * This class defines the properties that must be returned by any LLM provider to generate a completion for a given prompt.
+ */
 export class ILLMResponse {
   /**
    * Constructor for ILLMResponse.
@@ -23,6 +35,12 @@ export class ILLMResponse {
   }
 }
 
+/**
+ * @class LLMProviderConfig
+ * @memberOf module:LLMProviderInterface
+ * @description Interface for LLM provider configurations.
+ * This class defines the properties that must be passed to any LLM provider to generate a completion for a given prompt.
+ */
 export class LLMProviderConfig {
   /**
    * Constructor for LLMProviderConfig.

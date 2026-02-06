@@ -1,3 +1,8 @@
+/**
+ * @class LLMClientService
+ * @memberOf module:LLMClientService
+ * @description A service for generating completions from LLM providers with retry logic and error normalization.
+ */
 export class LLMClientService {
   /**
    * Constructor for LLMClientService

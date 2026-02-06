@@ -5,6 +5,13 @@ import {
   LLMProviderConfig,
 } from "../../services/llm-provider.interface.js";
 
+/**
+ * @class OpenAIProvider
+ * @memberOf module:OpenAIProvider
+ * @implements {ILLMProvider}
+ * @description This class implements the ILLMProvider interface for the OpenAI API.
+ * It allows you to generate completions using the OpenAI API and handles errors in a standardized way.
+ */
 export class OpenAIProvider extends ILLMProvider {
   /**
    * Constructor for OpenAIProvider.
