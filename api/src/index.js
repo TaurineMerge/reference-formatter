@@ -17,11 +17,26 @@ function main(dependencies = {}) {
     logger.info(`Server is running on port ${PORT}`);
   });
 
-  process.on("SIGTERM", () => {
-    logger.info("SIGTERM signal received: closing HTTP server");
-    server.close(() => {
+  let isShuttingDown = false;
+
+  process.on("SIGTERM", async () => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    logger.info("SIGTERM: Starting shutdown");
+
+    server.close(async () => {
       logger.info("HTTP server closed");
+      // Additional time for cleanup tasks
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      process.exit(0);
     });
+
+    // Force exit after 30 seconds
+    setTimeout(() => {
+      logger.error("Forced shutdown after timeout");
+      process.exit(1);
+    }, 30000);
   });
 }
 
