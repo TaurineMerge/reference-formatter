@@ -1,34 +1,43 @@
 import express from "express";
 import "dotenv/config";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import logger from "./utils/logger.js";
 
-function main() {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const staticPath = join(__dirname, "..", "..", "ui");
-
+function main(dependencies = {}) {
   const PORT = process.env.PORT || 3000;
 
+  const logger = dependencies.logger || console;
+
   const app = express();
-
-  app.use(express.static(staticPath));
-
-  const server = app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
-  });
 
   app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok" });
   });
 
-  process.on("SIGTERM", () => {
-    logger.info("SIGTERM signal received: closing HTTP server");
-    server.close(() => {
+  const server = app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT}`);
+  });
+
+  let isShuttingDown = false;
+
+  process.on("SIGTERM", async () => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    logger.info("SIGTERM: Starting shutdown");
+
+    server.close(async () => {
       logger.info("HTTP server closed");
+      // Additional time for cleanup tasks
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      process.exit(0);
     });
+
+    // Force exit after 30 seconds
+    setTimeout(() => {
+      logger.error("Forced shutdown after timeout");
+      process.exit(1);
+    }, 30000);
   });
 }
 
-main();
+main({ logger });
