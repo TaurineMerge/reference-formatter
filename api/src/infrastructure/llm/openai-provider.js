@@ -6,6 +6,12 @@ import {
 } from "../../services/llm-provider.interface.js";
 
 export class OpenAIProvider extends ILLMProvider {
+  /**
+   * Constructor for OpenAIProvider.
+   * @param {string} apiKey - The OpenAI API key to use for generating completions.
+   * @param {LLMProviderConfig} [config] - The configuration for the OpenAI provider.
+   * @throws {Error} If the OpenAI API key is missing or invalid.
+   */
   constructor(apiKey, config = new LLMProviderConfig({})) {
     super();
 
@@ -30,6 +36,16 @@ export class OpenAIProvider extends ILLMProvider {
     };
   }
 
+  /**
+   * Generates a completion for the given prompt using the provided parameters.
+   * @param {{ systemPrompt: string, userPrompt: string, options: object }} params - The parameters for generating the completion.
+   * @param {object} params.systemPrompt - The system prompt to use for generating the completion.
+   * @param {string} params.userPrompt - The user prompt to use for generating the completion.
+   * @param {object} [params.options] - The options for generating the completion.
+   * @param {object} [params.options.params] - The additional parameters to pass to the OpenAI provider.
+   * @returns {Promise<ILLMResponse>} A promise for the generated completion, or the full response if options.returnFullResponse is true.
+   * @throws {Error} If the OpenAI provider is invalid or if all attempts to generate the completion fail.
+   */
   async generateCompletion({ systemPrompt, userPrompt, options = {} }) {
     const params = {
       ...this.config,
@@ -61,6 +77,13 @@ export class OpenAIProvider extends ILLMProvider {
     }
   }
 
+  /**
+   * Normalizes an error to have a standard format.
+   * If the error is an APIError or has a status property, returns an error with the message and status properties set.
+   * Otherwise, returns the error unchanged.
+   * @param {Error} error The error to normalize
+   * @returns {Error} The normalized error
+   */
   normalizeError(error) {
     if (error.name === "APIError" || error.status) {
       const normalized = new Error(error.message);

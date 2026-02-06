@@ -1,9 +1,25 @@
 export class LLMClientService {
+  /**
+   * Constructor for LLMClientService
+   * @param {object} logger - The logger object to use for logging
+   */
   constructor(logger) {
     this.logger = logger;
     this.logger.debug("[LLMClientService] Initialized");
   }
 
+  /**
+   * Generate a completion for the given prompt using the provided LLM provider.
+   * @param {object} provider - The LLM provider to use for generating the completion.
+   * @param {string} systemPrompt - The system prompt to use for generating the completion.
+   * @param {string} userPrompt - The user prompt to use for generating the completion.
+   * @param {object} options - The options to use for generating the completion.
+   * @param {number} options.maxRetries - The maximum number of times to retry the generation on error.
+   * @param {number} options.retryDelay - The delay in milliseconds to wait before retrying the generation on error.
+   * @param {boolean} options.returnFullResponse - Whether to return the full response from the LLM provider, or just the content.
+   * @returns {Promise<string|object>} A promise for the generated completion, or the full response if options.returnFullResponse is true.
+   * @throws {Error} If the LLM provider is invalid or if all attempts to generate the completion fail.
+   */
   async generateCompletion(provider, systemPrompt, userPrompt, options = {}) {
     if (!provider || typeof provider.generateCompletion !== "function") {
       throw new Error("Valid LLM provider is required");
@@ -69,6 +85,15 @@ export class LLMClientService {
     }
   }
 
+  /**
+   * Returns true if the given error is retryable, false otherwise.
+   *
+   * A retryable error is one that has a status of 429 (rate limit), 503 (service unavailable), or 504 (gateway timeout).
+   * A retryable error is also one that has a message containing "timeout", "rate limit", "busy", or "try again".
+   *
+   * @param {Error} error The error to check
+   * @returns {boolean} True if the error is retryable, false otherwise
+   */
   shouldRetry(error) {
     const retryableStatuses = [429, 503, 504]; // Rate limit, service unavailable, gateway timeout
     const retryableMessages = [
@@ -92,12 +117,32 @@ export class LLMClientService {
     return false;
   }
 
+  /**
+   * Calculates the retry delay for the given attempt and base delay.
+   *
+   * The retry delay is calculated as an exponential backoff with a random jitter added to prevent
+   * thundering herd problem. The maximum retry delay is capped at 30 seconds.
+   *
+   * @param {number} attempt The attempt number (starts at 1)
+   * @param {number} baseDelay The base delay in milliseconds
+   * @returns {number} The retry delay in milliseconds
+   */
   calculateRetryDelay(attempt, baseDelay) {
     const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
     const jitter = Math.random() * 1000;
     return Math.min(exponentialDelay + jitter, 30000);
   }
 
+  /**
+   * Normalizes an error to have a standard format.
+   *
+   * For errors with a status of 401, returns an error with the message "Invalid API key".
+   * For errors with a status of 400, returns an error with the message "Invalid request: <error message>".
+   * For all other errors, returns the error unchanged.
+   *
+   * @param {Error} error The error to normalize
+   * @returns {Error} The normalized error
+   */
   normalizeError(error) {
     if (error.status === 401) {
       return new Error("Invalid API key");
