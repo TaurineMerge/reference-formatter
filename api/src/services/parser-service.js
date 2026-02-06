@@ -1,18 +1,28 @@
 import { PARSER_SYSTEM_PROMPT } from "../helpers/parser-llm-sys-prompt.js";
 
+/**
+ * Orchestrates parsing of unstructured text into structured JSON using an LLM.
+ * Handles system prompts, provider selection, and client service orchestration.
+ *
+ * @class
+ * @param {LLMClientService} llmClientService - Service to manage LLM completion requests
+ * @param {ILLMProvider} llmProvider - LLM provider instance (e.g., OpenAIProvider)
+ * @param {object} logger - Logger instance for debug and error tracking
+ * @param {string} [systemPrompt=PARSER_SYSTEM_PROMPT] - Instructions guiding parsing behavior
+ *
+ * @example
+ * const parser = new Parser(
+ *   clientService,
+ *   openaiProvider,
+ *   logger,
+ *   "You are a JSON parser. Extract structured data from raw text."
+ * );
+ */
 export class Parser {
   #systemPrompt;
   #llmProvider;
   #llmClientService;
 
-  /**
-   * Initializes a new instance of the Parser class.
-   *
-   * @param {LLMClientService} llmClientService - The LLM client service to use for generating completions.
-   * @param {LLMProvider} llmProvider - The LLM provider to use for generating completions.
-   * @param {Logger} logger - The logger to use for logging debug messages.
-   * @param {string} [systemPrompt=PARSER_SYSTEM_PROMPT] - The system prompt to use when generating completions.
-   */
   constructor(
     llmClientService,
     llmProvider,
@@ -27,13 +37,18 @@ export class Parser {
   }
 
   /**
-   * Parses the given input using the configured LLM provider.
+   * Parses raw text into a structured JSON object using the configured LLM provider.
+   * Retries and error handling are delegated to the LLM client service.
    *
-   * @param {string} input - The input to parse.
+   * @param {string} input - Raw text input to parse
+   * @returns {Promise<object>} Parsed JSON object
    *
-   * @returns {Promise<object>} A promise that resolves to the parsed JSON object.
+   * @throws {SyntaxError} If the LLM response is not valid JSON
+   * @throws {Error} If LLM request fails (network errors, API errors, or provider errors)
    *
-   * @throws {Error} If there is an error parsing the input.
+   * @example
+   * const result = await parser.parse("John Doe, age 30, lives in New York");
+   * // Returns: { name: "John Doe", age: 30, city: "New York" }
    */
   async parse(input) {
     this.logger.debug(`[Parser] Parsing input: ${input}`);
@@ -52,57 +67,57 @@ export class Parser {
   }
 
   /**
-   * Updates the system prompt used by the parser when generating completions.
+   * Updates the system prompt guiding the parsing behavior.
    *
-   * @param {string} systemPrompt - The new system prompt to use.
+   * @param {string} systemPrompt - New system prompt
    */
   setSystemPrompt(systemPrompt) {
     this.#systemPrompt = systemPrompt;
-    this.logger.debug(`[Parser] System prompt updated`);
+    this.logger.debug("[Parser] System prompt updated");
   }
 
   /**
-   * Updates the LLM provider used by the parser when generating completions.
+   * Updates the LLM provider instance used for parsing.
    *
-   * @param {LLMProvider} llmProvider - The new LLM provider to use.
+   * @param {ILLMProvider} llmProvider - New LLM provider
    */
   setLLMProvider(llmProvider) {
     this.#llmProvider = llmProvider;
-    this.logger.debug(`[Parser] LLM provider updated`);
+    this.logger.debug("[Parser] LLM provider updated");
   }
 
   /**
-   * Updates the LLM client service used by the parser when generating completions.
+   * Updates the LLM client service instance used for managing requests.
    *
-   * @param {LLMClientService} llmClientService - The new LLM client service to use.
+   * @param {LLMClientService} llmClientService - New client service instance
    */
   setLLMClientService(llmClientService) {
     this.#llmClientService = llmClientService;
-    this.logger.debug(`[Parser] LLM client service updated`);
+    this.logger.debug("[Parser] LLM client service updated");
   }
 
   /**
-   * Retrieves the current system prompt used by the parser when generating completions.
+   * Returns the current system prompt.
    *
-   * @returns {string} The current system prompt.
+   * @returns {string} Current system prompt
    */
   getSystemPrompt() {
     return this.#systemPrompt;
   }
 
   /**
-   * Retrieves the current LLM provider used by the parser when generating completions.
+   * Returns the current LLM provider.
    *
-   * @returns {LLMProvider} The current LLM provider.
+   * @returns {ILLMProvider} Current provider instance
    */
   getLLMProvider() {
     return this.#llmProvider;
   }
 
   /**
-   * Retrieves the current LLM client service used by the parser when generating completions.
+   * Returns the current LLM client service.
    *
-   * @returns {LLMClientService} The current LLM client service.
+   * @returns {LLMClientService} Current client service instance
    */
   getLLMClientService() {
     return this.#llmClientService;
