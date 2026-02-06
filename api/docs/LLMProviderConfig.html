@@ -49,7 +49,8 @@
 
 
 <div class="description">
-    <p>Constructor for LLMProviderConfig.</p>
+    <p>Configuration object for initializing LLM providers.
+Defines model parameters, sampling settings, and connection options.</p>
 </div>
 
 
@@ -101,7 +102,7 @@
 
             
 
-            <td class="description last"><p>The parameters for the LLM provider.</p>
+            <td class="description last"><p>Configuration parameters</p>
                 <h6>Properties</h6>
                 
 
@@ -115,7 +116,11 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -140,10 +145,24 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The model to use for generating the completion.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Model identifier (e.g., &quot;gpt-4o-mini&quot;)</p></td>
         </tr>
 
     
@@ -163,10 +182,24 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The temperature to use for generating the completion.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Sampling temperature (0–2, higher = more random)</p></td>
         </tr>
 
     
@@ -186,10 +219,24 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The maximum number of tokens to generate.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Maximum tokens to generate</p></td>
         </tr>
 
     
@@ -209,10 +256,24 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The top probability to use for generating the completion.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Nucleus sampling threshold (0–1)</p></td>
         </tr>
 
     
@@ -232,10 +293,24 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The frequency penalty to use for generating the completion.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Penalize frequent tokens (-2 to 2)</p></td>
         </tr>
 
     
@@ -255,10 +330,24 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The presence penalty to use for generating the completion.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Penalize repeated topics (-2 to 2)</p></td>
         </tr>
 
     
@@ -278,10 +367,24 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The timeout in milliseconds to wait for the completion.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Request timeout in milliseconds</p></td>
         </tr>
 
     
@@ -301,10 +404,24 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>The maximum number of times to retry the generation on error.</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Maximum retry attempts on failure</p></td>
         </tr>
 
     
@@ -324,10 +441,26 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>Additional parameters to pass to the LLM provider.</p></td>
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"><p>Provider-specific extra parameters</p></td>
         </tr>
 
     
@@ -375,7 +508,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_llm-provider.interface.js.html">services/llm-provider.interface.js</a>, <a href="services_llm-provider.interface.js.html#line58">line 58</a>
+        <a href="services_llm-provider.interface.js.html">services/llm-provider.interface.js</a>, <a href="services_llm-provider.interface.js.html#line53">line 53</a>
     </li></ul></dd>
     
 
@@ -402,6 +535,11 @@
 
 
 
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const config = new LLMProviderConfig({  model: "gpt-4o-mini",  temperature: 0.7,  maxTokens: 1024,  topP: 0.9,  frequencyPenalty: 0,  presencePenalty: 0,  timeout: 5000,  maxRetries: 3,  additionalParams: { logprobs: 5 }});</code></pre>
 
 
 
@@ -437,13 +575,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ILLMResponse_ILLMResponse.html">ILLMResponse</a></li><li><a href="LLMClientService_LLMClientService.html">LLMClientService</a></li><li><a href="LLMProviderConfig_LLMProviderConfig.html">LLMProviderConfig</a></li><li><a href="OpenAIProvider_OpenAIProvider.html">OpenAIProvider</a></li><li><a href="module-LLMClientService.LLMClientService.html">LLMClientService</a></li><li><a href="module-LLMProviderInterface.ILLMProvider.html">ILLMProvider</a></li><li><a href="module-LLMProviderInterface.ILLMResponse.html">ILLMResponse</a></li><li><a href="module-LLMProviderInterface.LLMProviderConfig.html">LLMProviderConfig</a></li><li><a href="module-OpenAIProvider.OpenAIProvider.html">OpenAIProvider</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ILLMResponse.html">ILLMResponse</a></li><li><a href="LLMClientService.html">LLMClientService</a></li><li><a href="LLMProviderConfig.html">LLMProviderConfig</a></li><li><a href="OpenAIProvider.html">OpenAIProvider</a></li><li><a href="Parser.html">Parser</a></li></ul><h3>Interfaces</h3><ul><li><a href="ILLMProvider.html">ILLMProvider</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Feb 06 2026 21:10:14 GMT+0300 (Москва, стандартное время)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Feb 06 2026 22:27:37 GMT+0300 (Москва, стандартное время)
 </footer>
 
 <script> prettyPrint(); </script>

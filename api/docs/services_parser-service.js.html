@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/parser-service.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/parser-service.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { PARSER_SYSTEM_PROMPT } from "../helpers/parser-llm-sys-prompt.js";
+
+/**
+ * Orchestrates parsing of unstructured text into structured JSON using an LLM.
+ * Handles system prompts, provider selection, and client service orchestration.
+ *
+ * @class
+ * @param {LLMClientService} llmClientService - Service to manage LLM completion requests
+ * @param {ILLMProvider} llmProvider - LLM provider instance (e.g., OpenAIProvider)
+ * @param {object} logger - Logger instance for debug and error tracking
+ * @param {string} [systemPrompt=PARSER_SYSTEM_PROMPT] - Instructions guiding parsing behavior
+ *
+ * @example
+ * const parser = new Parser(
+ *   clientService,
+ *   openaiProvider,
+ *   logger,
+ *   "You are a JSON parser. Extract structured data from raw text."
+ * );
+ */
+export class Parser {
+  #systemPrompt;
+  #llmProvider;
+  #llmClientService;
+
+  constructor(
+    llmClientService,
+    llmProvider,
+    logger,
+    systemPrompt = PARSER_SYSTEM_PROMPT,
+  ) {
+    this.logger = logger;
+    this.#systemPrompt = systemPrompt;
+    this.#llmProvider = llmProvider;
+    this.#llmClientService = llmClientService;
+    this.logger.debug("[Parser] Initialized");
+  }
+
+  /**
+   * Parses raw text into a structured JSON object using the configured LLM provider.
+   * Retries and error handling are delegated to the LLM client service.
+   *
+   * @param {string} input - Raw text input to parse
+   * @returns {Promise&lt;object>} Parsed JSON object
+   *
+   * @throws {SyntaxError} If the LLM response is not valid JSON
+   * @throws {Error} If LLM request fails (network errors, API errors, or provider errors)
+   *
+   * @example
+   * const result = await parser.parse("John Doe, age 30, lives in New York");
+   * // Returns: { name: "John Doe", age: 30, city: "New York" }
+   */
+  async parse(input) {
+    this.logger.debug(`[Parser] Parsing input: ${input}`);
+    try {
+      const response = await this.#llmClientService.generateCompletion(
+        this.#llmProvider,
+        this.#systemPrompt,
+        input,
+        {},
+      );
+      return JSON.parse(response.content);
+    } catch (error) {
+      this.logger.error(`[Parser] Error parsing input: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates the system prompt guiding the parsing behavior.
+   *
+   * @param {string} systemPrompt - New system prompt
+   */
+  setSystemPrompt(systemPrompt) {
+    this.#systemPrompt = systemPrompt;
+    this.logger.debug("[Parser] System prompt updated");
+  }
+
+  /**
+   * Updates the LLM provider instance used for parsing.
+   *
+   * @param {ILLMProvider} llmProvider - New LLM provider
+   */
+  setLLMProvider(llmProvider) {
+    this.#llmProvider = llmProvider;
+    this.logger.debug("[Parser] LLM provider updated");
+  }
+
+  /**
+   * Updates the LLM client service instance used for managing requests.
+   *
+   * @param {LLMClientService} llmClientService - New client service instance
+   */
+  setLLMClientService(llmClientService) {
+    this.#llmClientService = llmClientService;
+    this.logger.debug("[Parser] LLM client service updated");
+  }
+
+  /**
+   * Returns the current system prompt.
+   *
+   * @returns {string} Current system prompt
+   */
+  getSystemPrompt() {
+    return this.#systemPrompt;
+  }
+
+  /**
+   * Returns the current LLM provider.
+   *
+   * @returns {ILLMProvider} Current provider instance
+   */
+  getLLMProvider() {
+    return this.#llmProvider;
+  }
+
+  /**
+   * Returns the current LLM client service.
+   *
+   * @returns {LLMClientService} Current client service instance
+   */
+  getLLMClientService() {
+    return this.#llmClientService;
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ILLMResponse.html">ILLMResponse</a></li><li><a href="LLMClientService.html">LLMClientService</a></li><li><a href="LLMProviderConfig.html">LLMProviderConfig</a></li><li><a href="OpenAIProvider.html">OpenAIProvider</a></li><li><a href="Parser.html">Parser</a></li></ul><h3>Interfaces</h3><ul><li><a href="ILLMProvider.html">ILLMProvider</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Feb 06 2026 22:27:37 GMT+0300 (Москва, стандартное время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
