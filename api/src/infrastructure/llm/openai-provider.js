@@ -36,24 +36,38 @@ export class OpenAIProvider extends ILLMProvider {
       ...options.params,
     };
 
-    const response = await this.client.chat.completions.create({
-      model: params.model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: params.temperature,
-      max_tokens: params.maxTokens,
-      top_p: params.topP,
-      frequency_penalty: params.frequencyPenalty,
-      presence_penalty: params.presencePenalty,
-      ...params.additionalParams,
-    });
+    try {
+      const response = await this.client.chat.completions.create({
+        model: params.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: params.temperature,
+        max_tokens: params.maxTokens,
+        top_p: params.topP,
+        frequency_penalty: params.frequencyPenalty,
+        presence_penalty: params.presencePenalty,
+        ...params.additionalParams,
+      });
 
-    return new ILLMResponse(
-      response.choices[0].message.content,
-      response.usage,
-      response,
-    );
+      return new ILLMResponse(
+        response.choices[0].message.content,
+        response.usage,
+        response,
+      );
+    } catch (error) {
+      throw this.normalizeError(error);
+    }
+  }
+
+  normalizeError(error) {
+    if (error.name === "APIError" || error.status) {
+      const normalized = new Error(error.message);
+      normalized.status = error.status;
+      normalized.originalError = error;
+      return normalized;
+    }
+    return error;
   }
 }
