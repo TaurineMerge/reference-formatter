@@ -1,50 +1,39 @@
 export class LLMClientService {
-  #systemPrompt;
-  #provider;
-  #defaultOptions;
+  constructor(logger) {
+    this.logger = logger;
+    this.logger.debug("[LLMClientService] Initialized");
+  }
 
-  constructor(provider, systemPrompt, logger, options = {}) {
+  async generateCompletion(provider, systemPrompt, userPrompt, options = {}) {
     if (!provider || typeof provider.generateCompletion !== "function") {
       throw new Error("Valid LLM provider is required");
     }
 
-    this.logger = logger;
-    this.#provider = provider;
-    this.#systemPrompt = systemPrompt;
-    this.#defaultOptions = {
-      maxRetries: 0, // Retries are managed by the service instead
+    const defaultOptions = {
+      maxRetries: 0,
       retryDelay: options.retryDelay || 1000,
-      ...options,
-    };
-
-    this.logger.debug("[LLMClientService] Initialized with provider");
-  }
-
-  async generateCompletion(userPrompt, options = {}) {
-    const mergedOptions = {
-      ...this.#defaultOptions,
       ...options,
     };
 
     let lastError;
 
-    for (let attempt = 1; attempt <= mergedOptions.maxRetries; attempt++) {
+    for (let attempt = 1; attempt <= defaultOptions.maxRetries; attempt++) {
       try {
         this.logger.debug(
           `[LLMClientService] Attempt ${attempt}: Generating completion`,
         );
 
-        const response = await this.#provider.generateCompletion({
-          systemPrompt: this.#systemPrompt,
+        const response = await provider.generateCompletion({
+          systemPrompt,
           userPrompt,
-          options: mergedOptions,
+          options: defaultOptions,
         });
 
         this.logger.debug(
           `[LLMClientService] Completion generated. Tokens: ${response.usage?.total_tokens || "N/A"}`,
         );
 
-        if (mergedOptions.returnFullResponse) {
+        if (defaultOptions.returnFullResponse) {
           return {
             content: response.content,
             usage: response.usage,
@@ -57,20 +46,20 @@ export class LLMClientService {
         lastError = error;
 
         this.logger.error(
-          `[LLMClientService] Error (attempt ${attempt}/${mergedOptions.maxRetries}): ${error.message}`,
+          `[LLMClientService] Error (attempt ${attempt}/${defaultOptions.maxRetries}): ${error.message}`,
         );
 
-        if (this.shouldRetry(error) && attempt < mergedOptions.maxRetries) {
+        if (this.shouldRetry(error) && attempt < defaultOptions.maxRetries) {
           const delay = this.calculateRetryDelay(
             attempt,
-            mergedOptions.retryDelay,
+            defaultOptions.retryDelay,
           );
           this.logger.warn(`[LLMClientService] Retrying in ${delay}ms`);
           await new Promise((resolve) => setTimeout(resolve, delay));
           continue;
         }
 
-        if (attempt === mergedOptions.maxRetries || !this.shouldRetry(error)) {
+        if (attempt === defaultOptions.maxRetries || !this.shouldRetry(error)) {
           this.logger.error(
             `[LLMClientService] ${this.shouldRetry(error) ? "All attempts failed" : "Non-retryable error"}`,
           );
@@ -119,23 +108,5 @@ export class LLMClientService {
     }
 
     return error;
-  }
-
-  getSystemPrompt() {
-    return this.#systemPrompt;
-  }
-
-  setSystemPrompt(systemPrompt) {
-    this.#systemPrompt = systemPrompt;
-    this.logger.debug("[LLMClientService] System prompt updated");
-  }
-
-  setProvider(provider) {
-    if (!provider || typeof provider.generateCompletion !== "function") {
-      throw new Error("Valid LLM provider is required");
-    }
-
-    this.#provider = provider;
-    this.logger.debug("[LLMClientService] Provider updated");
   }
 }
