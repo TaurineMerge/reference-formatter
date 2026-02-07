@@ -1,6 +1,7 @@
+import { injectable } from "tsyringe";
 import pino from "pino";
 import { PARSER_SYSTEM_PROMPT } from "../helpers/parser-llm-sys-prompt.js";
-import { ILLMProvider } from "./llm-provider.interface.js";
+import type { ILLMProvider } from "./llm-provider.interface.js";
 import { LLMClientService } from "./llm-client-service.js";
 
 /**
@@ -21,6 +22,7 @@ import { LLMClientService } from "./llm-client-service.js";
  *   "You are a JSON parser. Extract structured data from raw text."
  * );
  */
+@injectable()
 export class Parser {
   #systemPrompt: string;
   #llmProvider: ILLMProvider;
@@ -31,7 +33,7 @@ export class Parser {
     llmClientService: LLMClientService,
     llmProvider: ILLMProvider,
     logger: pino.Logger,
-    systemPrompt = PARSER_SYSTEM_PROMPT,
+    systemPrompt = PARSER_SYSTEM_PROMPT
   ) {
     this.#logger = logger;
     this.#systemPrompt = systemPrompt;
@@ -61,16 +63,18 @@ export class Parser {
         this.#llmProvider,
         this.#systemPrompt,
         input,
-        {},
+        {}
       );
-      const content = typeof response === 'string' ? response : response.content;
+      const content = typeof response === "string" ? response : response.content;
       return JSON.parse(content);
     } catch (error: unknown) {
       if (error instanceof SyntaxError) {
         this.#logger.error(`[Parser] Error parsing input: ${error.message}`);
         throw error;
       }
-      this.#logger.error(`[Parser] LLM request failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      this.#logger.error(
+        `[Parser] LLM request failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
       throw error;
     }
   }

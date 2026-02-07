@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Parser } from "../parser-service.js";
 
@@ -20,12 +21,7 @@ describe("Parser", () => {
       error: vi.fn(),
     };
 
-    parser = new Parser(
-      llmClientServiceMock,
-      PROVIDER,
-      loggerMock,
-      SYSTEM_PROMPT,
-    );
+    parser = new Parser(llmClientServiceMock, PROVIDER, loggerMock, SYSTEM_PROMPT);
   });
 
   it("parses valid JSON response from LLM", async () => {
@@ -41,7 +37,7 @@ describe("Parser", () => {
       PROVIDER,
       SYSTEM_PROMPT,
       INPUT,
-      {},
+      {}
     );
 
     expect(result).toEqual({ foo: "bar" });

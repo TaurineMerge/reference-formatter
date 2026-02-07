@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { LLMClientService } from "../llm-client-service.js";
 
@@ -23,9 +24,7 @@ describe("LLMClientService", () => {
   describe("Constructor", () => {
     it("should initialize with logger", () => {
       expect(service).toBeDefined();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        "[LLMClientService] Initialized",
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith("[LLMClientService] Initialized");
     });
   });
 
@@ -43,7 +42,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         "test prompt",
-        { maxRetries: 3 },
+        { maxRetries: 3 }
       );
 
       expect(result).toBe("Test response");
@@ -55,15 +54,15 @@ describe("LLMClientService", () => {
     });
 
     it("should throw error when provider is invalid", async () => {
-      await expect(
-        service.generateCompletion(null, "prompt", "test"),
-      ).rejects.toThrow("Valid LLM provider is required");
+      await expect(service.generateCompletion(null, "prompt", "test")).rejects.toThrow(
+        "Valid LLM provider is required"
+      );
     });
 
     it("should throw error when provider lacks generateCompletion method", async () => {
-      await expect(
-        service.generateCompletion({}, "prompt", "test"),
-      ).rejects.toThrow("Valid LLM provider is required");
+      await expect(service.generateCompletion({}, "prompt", "test")).rejects.toThrow(
+        "Valid LLM provider is required"
+      );
     });
 
     it("should return full response when returnFullResponse option is true", async () => {
@@ -79,7 +78,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         "test prompt",
-        { returnFullResponse: true, maxRetries: 3 },
+        { returnFullResponse: true, maxRetries: 3 }
       );
 
       expect(result).toEqual({
@@ -107,7 +106,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         "test prompt",
-        { maxRetries: 3 },
+        { maxRetries: 3 }
       );
 
       expect(result).toBe("Success after retry");
@@ -133,7 +132,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         "test prompt",
-        { maxRetries: 3 },
+        { maxRetries: 3 }
       );
 
       expect(result).toBe("Success after multiple retries");
@@ -147,12 +146,9 @@ describe("LLMClientService", () => {
       mockProvider.generateCompletion.mockRejectedValue(retryableError);
 
       await expect(
-        service.generateCompletion(
-          mockProvider,
-          "You are a helpful assistant",
-          "test prompt",
-          { maxRetries: 3 },
-        ),
+        service.generateCompletion(mockProvider, "You are a helpful assistant", "test prompt", {
+          maxRetries: 3,
+        })
       ).rejects.toThrow("Timeout");
 
       expect(mockProvider.generateCompletion).toHaveBeenCalledTimes(3);
@@ -165,12 +161,9 @@ describe("LLMClientService", () => {
       mockProvider.generateCompletion.mockRejectedValue(nonRetryableError);
 
       await expect(
-        service.generateCompletion(
-          mockProvider,
-          "You are a helpful assistant",
-          "test prompt",
-          { maxRetries: 3 },
-        ),
+        service.generateCompletion(mockProvider, "You are a helpful assistant", "test prompt", {
+          maxRetries: 3,
+        })
       ).rejects.toThrow("Invalid request: Invalid request");
 
       expect(mockProvider.generateCompletion).toHaveBeenCalledTimes(1);
@@ -193,7 +186,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         "test prompt",
-        { maxRetries: 3 },
+        { maxRetries: 3 }
       );
 
       expect(result).toBe("Success after timeout retry");
@@ -217,7 +210,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         "test prompt",
-        { maxRetries: 3 },
+        { maxRetries: 3 }
       );
 
       expect(result).toBe("Success after rate limit");
@@ -232,19 +225,14 @@ describe("LLMClientService", () => {
 
       mockProvider.generateCompletion.mockResolvedValue(mockResponse);
 
-      await service.generateCompletion(
-        mockProvider,
-        "You are a helpful assistant",
-        "test prompt",
-        { maxRetries: 3 },
-      );
+      await service.generateCompletion(mockProvider, "You are a helpful assistant", "test prompt", {
+        maxRetries: 3,
+      });
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        "[LLMClientService] Attempt 1: Generating completion",
+        "[LLMClientService] Attempt 1: Generating completion"
       );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        expect.stringContaining("Tokens: 100"),
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringContaining("Tokens: 100"));
     });
 
     it("should merge options correctly", async () => {
@@ -256,15 +244,10 @@ describe("LLMClientService", () => {
 
       mockProvider.generateCompletion.mockResolvedValue(mockResponse);
 
-      await service.generateCompletion(
-        mockProvider,
-        "You are a helpful assistant",
-        "test prompt",
-        {
-          temperature: 0.5,
-          maxRetries: 3,
-        },
-      );
+      await service.generateCompletion(mockProvider, "You are a helpful assistant", "test prompt", {
+        temperature: 0.5,
+        maxRetries: 3,
+      });
 
       expect(mockProvider.generateCompletion).toHaveBeenCalledWith({
         systemPrompt: "You are a helpful assistant",
@@ -283,12 +266,9 @@ describe("LLMClientService", () => {
       mockProvider.generateCompletion.mockRejectedValue(authError);
 
       await expect(
-        service.generateCompletion(
-          mockProvider,
-          "You are a helpful assistant",
-          "test prompt",
-          { maxRetries: 3 },
-        ),
+        service.generateCompletion(mockProvider, "You are a helpful assistant", "test prompt", {
+          maxRetries: 3,
+        })
       ).rejects.toThrow("Invalid API key");
     });
   });
@@ -462,7 +442,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         "",
-        { maxRetries: 3 },
+        { maxRetries: 3 }
       );
 
       expect(result).toBe("Response");
@@ -482,7 +462,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         longPrompt,
-        { maxRetries: 3 },
+        { maxRetries: 3 }
       );
 
       expect(result).toBe("Response");
@@ -501,7 +481,7 @@ describe("LLMClientService", () => {
         mockProvider,
         "You are a helpful assistant",
         "test prompt",
-        { maxRetries: 3 },
+        { maxRetries: 3 }
       );
 
       expect(result).toBe("");
@@ -517,24 +497,15 @@ describe("LLMClientService", () => {
       mockProvider.generateCompletion.mockResolvedValue(mockResponse);
 
       const results = await Promise.all([
-        service.generateCompletion(
-          mockProvider,
-          "You are a helpful assistant",
-          "test prompt 1",
-          { maxRetries: 3 },
-        ),
-        service.generateCompletion(
-          mockProvider,
-          "You are a helpful assistant",
-          "test prompt 2",
-          { maxRetries: 3 },
-        ),
-        service.generateCompletion(
-          mockProvider,
-          "You are a helpful assistant",
-          "test prompt 3",
-          { maxRetries: 3 },
-        ),
+        service.generateCompletion(mockProvider, "You are a helpful assistant", "test prompt 1", {
+          maxRetries: 3,
+        }),
+        service.generateCompletion(mockProvider, "You are a helpful assistant", "test prompt 2", {
+          maxRetries: 3,
+        }),
+        service.generateCompletion(mockProvider, "You are a helpful assistant", "test prompt 3", {
+          maxRetries: 3,
+        }),
       ]);
 
       expect(results).toHaveLength(3);

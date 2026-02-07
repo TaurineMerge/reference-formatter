@@ -1,3 +1,4 @@
+import { injectable } from "tsyringe";
 import pino from "pino";
 import { ILLMProvider, ILLMResponse } from "./llm-provider.interface.js";
 
@@ -12,6 +13,7 @@ interface GenerateCompletionOptions {
  * Orchestrates LLM completion requests with automatic retry logic and error handling.
  * Manages the communication between application code and LLM providers, handling transient failures gracefully.
  */
+@injectable()
 export class LLMClientService {
   #logger: pino.Logger;
 
@@ -30,14 +32,14 @@ export class LLMClientService {
     provider: ILLMProvider,
     systemPrompt: string,
     userPrompt: string,
-    options: GenerateCompletionOptions = {},
+    options: GenerateCompletionOptions = {}
   ): Promise<string | ILLMResponse> {
     if (!provider || typeof provider.generateCompletion !== "function") {
       throw new Error("Valid LLM provider is required");
     }
 
     const defaultOptions = {
-      maxRetries: options.maxRetries ?? 0,
+      maxRetries: options.maxRetries ?? 1,
       retryDelay: options.retryDelay || 1000,
       ...options,
     };
@@ -46,9 +48,7 @@ export class LLMClientService {
 
     for (let attempt = 1; attempt <= defaultOptions.maxRetries; attempt++) {
       try {
-        this.#logger.debug(
-          `[LLMClientService] Attempt ${attempt}: Generating completion`,
-        );
+        this.#logger.debug(`[LLMClientService] Attempt ${attempt}: Generating completion`);
 
         const response = await provider.generateCompletion({
           systemPrompt,
@@ -57,7 +57,7 @@ export class LLMClientService {
         });
 
         this.#logger.debug(
-          `[LLMClientService] Completion generated. Tokens: ${response.usage?.total_tokens || "N/A"}`,
+          `[LLMClientService] Completion generated. Tokens: ${response.usage?.total_tokens || "N/A"}`
         );
 
         if (defaultOptions.returnFullResponse) {
@@ -72,17 +72,13 @@ export class LLMClientService {
       } catch (error) {
         lastError = error;
 
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
         this.#logger.error(
-          `[LLMClientService] Error (attempt ${attempt}/${defaultOptions.maxRetries}): ${errorMessage}`,
+          `[LLMClientService] Error (attempt ${attempt}/${defaultOptions.maxRetries}): ${errorMessage}`
         );
 
         if (this.shouldRetry(error) && attempt < defaultOptions.maxRetries) {
-          const delay = this.calculateRetryDelay(
-            attempt,
-            defaultOptions.retryDelay,
-          );
+          const delay = this.calculateRetryDelay(attempt, defaultOptions.retryDelay);
           this.#logger.warn(`[LLMClientService] Retrying in ${delay}ms`);
           await new Promise((resolve) => setTimeout(resolve, delay));
           continue;
@@ -90,7 +86,7 @@ export class LLMClientService {
 
         if (attempt === defaultOptions.maxRetries || !this.shouldRetry(error)) {
           this.#logger.error(
-            `[LLMClientService] ${this.shouldRetry(error) ? "All attempts failed" : "Non-retryable error"}`,
+            `[LLMClientService] ${this.shouldRetry(error) ? "All attempts failed" : "Non-retryable error"}`
           );
           throw this.normalizeError(lastError);
         }
@@ -106,26 +102,15 @@ export class LLMClientService {
    */
   private shouldRetry(error: unknown): boolean {
     const retryableStatuses = [429, 503, 504];
-    const retryableMessages = [
-      /timeout/i,
-      /rate limit/i,
-      /busy/i,
-      /try again/i,
-    ];
+    const retryableMessages = [/timeout/i, /rate limit/i, /busy/i, /try again/i];
 
     if (error instanceof Error) {
       const apiError = error as unknown as Record<string, unknown>;
-      if (
-        apiError.status &&
-        retryableStatuses.includes(apiError.status as number)
-      ) {
+      if (apiError.status && retryableStatuses.includes(apiError.status as number)) {
         return true;
       }
 
-      if (
-        error.message &&
-        retryableMessages.some((pattern) => pattern.test(error.message))
-      ) {
+      if (error.message && retryableMessages.some((pattern) => pattern.test(error.message))) {
         return true;
       }
     }
