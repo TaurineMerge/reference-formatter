@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { describe, it, expect, beforeEach } from "vitest";
 import { OpenAIProvider } from "../openai-provider.js";
 import { LLMProviderConfig } from "../../../services/llm-provider.interface.js";

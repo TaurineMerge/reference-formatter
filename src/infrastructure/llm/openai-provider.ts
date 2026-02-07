@@ -1,9 +1,12 @@
+import { injectable } from "tsyringe";
 import OpenAI from "openai";
 import {
   ILLMProvider,
   ILLMResponse,
   LLMProviderConfig,
 } from "../../services/llm-provider.interface.js";
+import { ProxyAgent, setGlobalDispatcher } from "undici";
+import "dotenv/config";
 
 /**
  * OpenAI API implementation of the LLM provider interface.
@@ -18,6 +21,7 @@ import {
  *   maxTokens: 1000
  * }));
  */
+@injectable()
 export class OpenAIProvider implements ILLMProvider {
   private client: OpenAI;
   private config: Record<string, unknown>;
@@ -26,11 +30,16 @@ export class OpenAIProvider implements ILLMProvider {
     if (!apiKey) {
       throw new Error("OpenAI API key is required");
     }
-
+    setGlobalDispatcher(new ProxyAgent(process.env.HTTP_PROXY || process.env.HTTPS_PROXY || ""));
     this.client = new OpenAI({
       apiKey,
       timeout: config.timeout || 30000,
       maxRetries: config.maxRetries || 3,
+      fetch: (url, options) => {
+        return fetch(url, {
+          ...options,
+        });
+      },
     });
 
     this.config = {
@@ -81,13 +90,15 @@ export class OpenAIProvider implements ILLMProvider {
         top_p: params.topP as number,
         frequency_penalty: params.frequencyPenalty as number,
         presence_penalty: params.presencePenalty as number,
-        ...(typeof params.additionalParams === "object" && params.additionalParams ? params.additionalParams : {}),
+        ...(typeof params.additionalParams === "object" && params.additionalParams
+          ? params.additionalParams
+          : {}),
       });
-
+      console.log("OpenAI response:", response);
       return new ILLMResponse(
         response.choices[0].message.content ?? "",
         response.usage ? (response.usage as unknown as Record<string, unknown>) : null,
-        response as unknown as Record<string, unknown>,
+        response as unknown as Record<string, unknown>
       );
     } catch (error) {
       throw this.normalizeError(error);
