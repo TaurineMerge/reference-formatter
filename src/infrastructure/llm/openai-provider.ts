@@ -44,7 +44,7 @@ export class OpenAIProvider implements ILLMProvider {
 
     this.config = {
       model: config.model || "gpt-4o-mini",
-      temperature: config.temperature || 0.7,
+      temperature: config.temperature || 0.4,
       maxTokens: config.maxTokens || 256,
       topP: config.topP || 1,
       frequencyPenalty: config.frequencyPenalty || 0,
@@ -94,7 +94,7 @@ export class OpenAIProvider implements ILLMProvider {
           ? params.additionalParams
           : {}),
       });
-      console.log("OpenAI response:", response);
+      console.log("OpenAI response:", response.choices[0].message.content);
       return new ILLMResponse(
         response.choices[0].message.content ?? "",
         response.usage ? (response.usage as unknown as Record<string, unknown>) : null,
