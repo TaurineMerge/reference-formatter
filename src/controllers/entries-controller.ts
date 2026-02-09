@@ -1,5 +1,8 @@
 import { injectable } from "tsyringe";
 import { Parser } from "../services/parser-service.js";
+import { OpenAlexSearcher } from "../infrastructure/data_providers/searchers/openalex-searcher.js";
+import { ParsedRecord } from "../infrastructure/data_providers/types/searcher.types.js";
+import "dotenv/config";
 
 /**
  * Entries Controller
@@ -16,6 +19,12 @@ export class EntriesController {
    * @throws {Error} If parsing fails
    */
   async parse(rawData: string): Promise<object> {
-    return this.parser.parse(rawData);
+    const parsedData = await this.parser.parse(rawData);
+    console.log("Parsed data:", parsedData);
+    const parsedRecord: ParsedRecord = parsedData;
+    const searcher = new OpenAlexSearcher(process.env.API_EMAIL || "");
+    const searchResults = await searcher.search(parsedRecord);
+    console.log("Search results:", searchResults);
+    return { ...parsedRecord, searchResults };
   }
 }
