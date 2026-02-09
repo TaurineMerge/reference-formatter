@@ -5,6 +5,11 @@ import { OpenAIProvider } from "../llm/openai-provider.js";
 import { LLMClientService } from "../../services/llm-client-service.js";
 import { Parser } from "../../services/parser-service.js";
 import { EntriesController } from "../../controllers/entries-controller.js";
+import { MultiSearcherService } from "../../services/multi-searcher-service.js";
+import { OpenAlexSearcher } from "../data_providers/searchers/openalex-searcher.js";
+import { CrossrefSearcher } from "../data_providers/searchers/crossref-searcher.js";
+import { CyberLeninkaSearcher } from "../data_providers/searchers/cyberleninka-searcher.js";
+import { SemanticScholarSearcher } from "../data_providers/searchers/semantic-scholar-searcher.js";
 import logger from "../../utils/logger.js";
 import { DITokens } from "./tokens.js";
 
@@ -42,6 +47,36 @@ export function setupDIContainer(): void {
   // Register EntriesController as singleton
   const entriesController = new EntriesController(parser);
   container.registerInstance(DITokens.EntriesController, entriesController);
+
+  // ============================================
+  // Register Searchers
+  // ============================================
+  const userAgentEmail = process.env.USER_AGENT_EMAIL || "user@example.com";
+  const semanticScholarApiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
+
+  const searchers = [];
+
+  // Register OpenAlex searcher (always available)
+  searchers.push(new OpenAlexSearcher(userAgentEmail));
+
+  // Register Crossref searcher (always available)
+  searchers.push(new CrossrefSearcher(userAgentEmail));
+
+  // Register Semantic Scholar searcher if API key is available
+  if (semanticScholarApiKey) {
+    searchers.push(new SemanticScholarSearcher(semanticScholarApiKey));
+  }
+
+  // Note: CyberLeninka is not registered as it requires web scraping implementation
+  // Uncomment when implementation is ready:
+  // searchers.push(new CyberLeninkaSearcher());
+
+  // Register searchers array
+  container.registerInstance(DITokens.Searchers, searchers);
+
+  // Register MultiSearcherService as singleton
+  const multiSearcherService = new MultiSearcherService(searchers);
+  container.registerInstance(DITokens.MultiSearcherService, multiSearcherService);
 }
 
 /**
