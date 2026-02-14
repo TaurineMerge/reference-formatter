@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { container, InjectionToken } from "tsyringe";
-import { LLMProviderConfig } from "../../services/llm-provider.interface.js";
+import { LLMProviderConfig } from "../../infrastructure/llm/interfaces/llm-provider.interface.js";
 import { OpenAIProvider } from "../llm/openai-provider.js";
 import { LLMClientService } from "../../services/llm-client-service.js";
 import { Parser } from "../../services/parser-service.js";
