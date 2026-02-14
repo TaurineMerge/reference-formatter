@@ -1,6 +1,7 @@
 node_modules
 dist
-docs
+.next
+build
 coverage
-*.lock
-pnpm-lock.yaml
+.DS_Store
+*.log
