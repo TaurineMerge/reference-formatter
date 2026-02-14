@@ -8,7 +8,6 @@ import { EntriesController } from "../../controllers/entries-controller.js";
 import { MultiSearcherService } from "../../services/multi-searcher-service.js";
 import { OpenAlexSearcher } from "../data_providers/searchers/openalex-searcher.js";
 import { CrossrefSearcher } from "../data_providers/searchers/crossref-searcher.js";
-import { CyberLeninkaSearcher } from "../data_providers/searchers/cyberleninka-searcher.js";
 import { SemanticScholarSearcher } from "../data_providers/searchers/semantic-scholar-searcher.js";
 import logger from "../../utils/logger.js";
 import { DITokens } from "./tokens.js";

@@ -1,7 +1,7 @@
 import { injectable } from "tsyringe";
 import pino from "pino";
 import { PARSER_SYSTEM_PROMPT } from "../helpers/parser-llm-sys-prompt.js";
-import type { ILLMProvider } from "./llm-provider.interface.js";
+import type { ILLMProvider } from "../infrastructure/llm/interfaces/llm-provider.interface.js";
 import { LLMClientService } from "./llm-client-service.js";
 
 /**

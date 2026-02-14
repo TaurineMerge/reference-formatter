@@ -1,6 +1,9 @@
 import { injectable } from "tsyringe";
 import pino from "pino";
-import { ILLMProvider, ILLMResponse } from "./llm-provider.interface.js";
+import {
+  ILLMProvider,
+  ILLMResponse,
+} from "../infrastructure/llm/interfaces/llm-provider.interface.js";
 
 interface GenerateCompletionOptions {
   maxRetries?: number;
