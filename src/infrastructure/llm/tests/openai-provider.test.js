@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { describe, it, expect, beforeEach } from "vitest";
 import { OpenAIProvider } from "../openai-provider.js";
-import { LLMProviderConfig } from "../../../services/llm-provider.interface.js";
+import { LLMProviderConfig } from "../interfaces/llm-provider.interface.js";
 
 describe("OpenAIProvider", () => {
   describe("Constructor", () => {
@@ -27,7 +27,7 @@ describe("OpenAIProvider", () => {
       const provider = new OpenAIProvider("test-api-key");
 
       expect(provider.config.model).toBe("gpt-4o-mini");
-      expect(provider.config.temperature).toBe(0.7);
+      expect(provider.config.temperature).toBe(0.4);
       expect(provider.config.maxTokens).toBe(256);
       expect(provider.config.topP).toBe(1);
       expect(provider.config.frequencyPenalty).toBe(0);

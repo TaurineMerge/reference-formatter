@@ -4,7 +4,7 @@ import {
   ILLMProvider,
   ILLMResponse,
   LLMProviderConfig,
-} from "../../services/llm-provider.interface.js";
+} from "./interfaces/llm-provider.interface.js";
 import { ProxyAgent, setGlobalDispatcher } from "undici";
 import "dotenv/config";
 
