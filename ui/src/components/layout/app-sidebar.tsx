@@ -1,3 +1,4 @@
+import { useNavigate, useLocation } from 'react-router';
 import {
   Sidebar,
   SidebarContent,
@@ -8,22 +9,35 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Database, Settings } from 'lucide-react';
+import { Cpu, Database, Settings, TextCursorInput } from 'lucide-react';
 
 const navigationItems = [
   {
+    label: 'Entries',
+    icon: TextCursorInput,
+    path: '/entries',
+  },
+  {
+    label: 'Processing',
+    icon: Cpu,
+    path: '/processing',
+  },
+  {
     label: 'Databases',
     icon: Database,
-    onClick: () => alert('Databases clicked'),
+    path: '/databases',
   },
   {
     label: 'Settings',
     icon: Settings,
-    onClick: () => alert('Settings clicked'),
+    path: '/settings',
   },
 ];
 
 export function AppSidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -40,9 +54,13 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {navigationItems.map((item, index) => (
-              <SidebarMenuItem key={index}>
-                <SidebarMenuButton className="cursor-pointer" onClick={item.onClick}>
+            {navigationItems.map((item) => (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton
+                  className="cursor-pointer"
+                  onClick={() => navigate(item.path)}
+                  isActive={location.pathname === item.path}
+                >
                   <item.icon className="w-4 h-4" />
                   <span>{item.label}</span>
                 </SidebarMenuButton>
