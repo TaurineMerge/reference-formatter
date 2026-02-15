@@ -44,6 +44,10 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-text-accent: var(--accent);
+  --shadow-accent:
+    0 -4px 10px -2px hsl(var(--accent) / 0.3), 0 4px 10px -2px hsl(var(--accent) / 0.3);
+  --shadow-accent-hover:
+    0 -6px 15px -2px hsl(var(--accent) / 0.4), 0 6px 15px -2px hsl(var(--accent) / 0.4);
 }
 
 :root {
@@ -121,4 +125,19 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@utility shadow-accent {
+  box-shadow:
+    0 0 10px -2px oklch(from var(--accent) l c h / 0.2),
+    0 10px 15px -6px oklch(from var(--accent) l c h / 0.4);
+  transition-property: box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+@utility shadow-accent-hover {
+  box-shadow:
+    0 0 15px -2px oklch(from var(--accent) l c h / 0.3),
+    0 15px 25px -6px oklch(from var(--accent) l c h / 0.5);
 }
