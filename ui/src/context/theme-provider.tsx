@@ -1,3 +1,4 @@
+'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
@@ -26,9 +27,14 @@ export function ThemeProvider({
   storageKey = 'vite-ui-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, [storageKey]);
 
   useEffect(() => {
     const root = window.document.documentElement;
