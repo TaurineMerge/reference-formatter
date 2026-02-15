@@ -7,10 +7,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <div className="flex flex-col h-screen w-full">
+      <div className="flex-1 min-h-0">
+        <Header />
         <ScrollArea>
-          <Header />
-          <main className="w-full overflow-y-auto overflow-x-hidden">{children}</main>
+          <main className="min-h-[calc(100vh-24rem)] flex items-center justify-center">
+            {children}
+          </main>
         </ScrollArea>
       </div>
     </SidebarProvider>
