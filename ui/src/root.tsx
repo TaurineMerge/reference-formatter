@@ -4,9 +4,7 @@ import { AppContext } from './context';
 import './index.css';
 
 export const links: LinksFunction = () => {
-  return [
-    // Links to external resources
-  ];
+  return [{ rel: 'icon', href: '/favicon.png' }];
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
