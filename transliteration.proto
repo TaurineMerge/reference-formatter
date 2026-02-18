@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package transliteration;
+
+service TransliterationService {
+  rpc Transliterate (TransliterationRequest)
+      returns (TransliterationResponse);
+}
+
+message TransliterationRequest {
+  string text = 1;
+}
+
+message TransliterationResponse {
+  string transliterated_name = 1;
+}
