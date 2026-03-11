@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  nginx:
+    build: ./ui
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - '80:80'
+    depends_on:
+      - server
+      - transliteration
+    restart: unless-stopped
+
+  server:
+    build: ./server
+    expose:
+      - '3000'
+    env_file:
+      - ./server/.env
+    restart: unless-stopped
+    depends_on:
+      - transliteration
+
+  transliteration:
+    build: ./transliteration-service
+    expose:
+      - '50051'
+    restart: unless-stopped
