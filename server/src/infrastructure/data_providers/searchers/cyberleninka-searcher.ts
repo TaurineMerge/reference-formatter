@@ -39,5 +39,6 @@ export class CyberLeninkaSearcher implements ISearcher {
     // 3. Contact CyberLeninka for API access
 
     throw new Error("CyberLeninka searcher not implemented - no official API available");
+    console.log(this.searchUrl, parsed, options); // eslint-disable-line
   }
 }
